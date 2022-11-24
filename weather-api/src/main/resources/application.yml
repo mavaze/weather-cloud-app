@@ -1,0 +1,44 @@
+server:
+  port: 9090
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1024
+encrypt:
+  keyStore:
+    location: classpath:/server.jks
+    password: changeme
+    alias: mytestkey
+    secret: changeme
+spring:
+  application.name: weather-api
+  cache.type: caffeine
+  cloud:
+    loadbalancer:
+      cache:
+        enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://nodeagent:9000
+app:
+  api:
+    forecast:
+      period: 3
+      thresholds:
+        high-temp: 40
+        wind-speed: 10
+open-weather-map:
+  api:
+    version: 2.5
+    appid: '{cipher}AQBSy+ZofiVjIlc/miQMs4S1kM0ZxAn0wj/JOOu8Uav7MT03cF0kmTH8pYcdPXumyYiORapMiHr8AwBGvo7CxFa3jc2eGj7w/AA7H0nW7+U7VOyqTMFOQz8PFZD/zxkBtk1Yb3eHzrBm4Dkqmi0yuScmI6fuQbfFBxUqYLlVsCv8smquRriG8L46XpM99nd8L37I5QKjiryzA0+sWqiz5voNlhjjE6B3wEfQoJfvf5elDI9wG0d3StWAneZcFVCC7K8vqeeh0yXW99ki2CIeUQcg8+/ZFc7eXPLNkqaHN4kwoWoCdXPcyA69TAP97PMMymoVYexcLq7Skmv+ddzvX/h0U37CKWQZir65NrLMYLB6V4AHf34MXsR5DRTObXoTiS/Uo++q78tuSBA/py0MTG3UTedxGYl1HG4bP2nD+bkETw=='
+  feign:
+    url: http://api.openweathermap.org
+
+logging:
+  level:
+    root: DEBUG
+    org.apache.tomcat.util.net.NioEndpoint: OFF
