@@ -1,0 +1,35 @@
+version: "2"
+services:
+    gateway:
+        container_name: weather-cloud-gateway
+        build:
+            context: gateway
+            dockerfile: Dockerfile
+        image: weather-cloud-gateway:latest
+        ports:
+            - 8080:8080
+        networks:
+            - weather-cloud-network
+    security:
+        container_name: weather-cloud-security
+        build:
+            context: security
+            dockerfile: Dockerfile
+        image: weather-cloud-security:latest
+        ports:
+            - 9001:9001
+        networks:
+            - weather-cloud-network
+    weather-api:
+        container_name: weather-cloud-api
+        build:
+            context: weather-api
+            dockerfile: Dockerfile
+        image: weather-cloud-api:latest
+        ports:
+            - 9090:9090
+        networks:
+            - weather-cloud-network
+networks:
+    weather-cloud-network:
+        driver: bridge

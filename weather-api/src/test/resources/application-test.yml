@@ -1,0 +1,16 @@
+spring:
+  application.name: weather-api
+
+app:
+  api:
+    forecast:
+      period: 3
+      thresholds:
+        high-temp: 40
+        wind-speed: 10
+open-weather-map:
+  api:
+    version: 2.5
+    appid: dummy-app-id 
+  feign:
+    url: http://localhost:23900
