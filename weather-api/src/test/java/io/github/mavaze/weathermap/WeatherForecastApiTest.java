@@ -2,8 +2,6 @@ package io.github.mavaze.weathermap;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static io.github.mavaze.weathermap.support.StubUtils.setFixedTimeAndExecute;
 import static io.github.mavaze.weathermap.support.StubUtils.stubOpenApiConnectionReset;
 import static io.github.mavaze.weathermap.support.StubUtils.stubOpenApiWithSuccessResponse;
 import static io.restassured.RestAssured.config;
@@ -20,23 +18,28 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
+import io.github.mavaze.weathermap.support.ApplicationContextTestConfiguration;
 import io.github.mavaze.weathermap.support.WireMockExtensions;
 
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { ApplicationContextTestConfiguration.class })
 public class WeatherForecastApiTest {
 
     @LocalServerPort
@@ -48,43 +51,40 @@ public class WeatherForecastApiTest {
     @RegisterExtension
     static WireMockExtension openWeatherMapApi = WireMockExtensions.forOpenWeatherMapApi();
 
-    @BeforeEach
-    public void preTest() {
-
+    @BeforeAll
+    public static void setup() {
+        DateTimeUtils.setCurrentMillisFixed(DateTime.parse("2022-11-21T10:00:00Z").getMillis());
     }
 
-    @AfterEach
-    public void postTest() {
+    @AfterAll
+    public static void tearDown() {
+        DateTimeUtils.setCurrentMillisSystem();
     }
 
     @Test
-    @Disabled("till fixing clock in right way and implementing mock oauth2 security")
     public void verifyFetchAndTransformResponseFromOpenWeatherMapApi() throws Exception {
         stubOpenApiWithSuccessResponse(openWeatherMapApi);
 
-        setFixedTimeAndExecute("2022-11-22T10:00:00Z", () -> {
-            // @formatter:off
-            given()
-                .config(config().jsonConfig(jsonConfig()))
-                .header("Content-Type", APPLICATION_JSON_VALUE)
-                // .header("Authorization", "Bearer test-auth-bearer")
-                .log().all()
-            .when()
-                .get(baseForcastQueryUrl + "?city=Sydney")
-                .prettyPeek()
-            .then()
-                .statusCode(OK.value())
-                .body("city.name", is("Sydney"))
-                .body("days", aMapWithSize(equalTo(3)))
-                .body("days['2022-11-24'].minTemp", equalTo(200.37f));
-            // @formatter:on
+        // @formatter:off
+        given()
+            .config(config().jsonConfig(jsonConfig()))
+            .header("Content-Type", APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer read-user-token")
+            .log().all()
+        .when()
+            .get(baseForcastQueryUrl + "?city=Sydney")
+            .prettyPeek()
+        .then()
+            .statusCode(OK.value())
+            .body("city.name", is("Sydney"))
+            .body("days", aMapWithSize(equalTo(3)))
+            .body("days['2022-11-24'].minTemp", equalTo(200.37f));
+        // @formatter:on
 
-            openWeatherMapApi.verify(1, getRequestedFor(urlMatching("/data/2.5/forecast.*")));
-        });
+        openWeatherMapApi.verify(1, getRequestedFor(urlMatching("/data/2.5/forecast.*")));
     }
 
     @Test
-    @Disabled("till implementing mock oauth2 security")
     public void verifyOpenWeatherApiFailurePopulatesErrorDto() throws IOException {
         stubOpenApiConnectionReset(openWeatherMapApi);
 
@@ -92,13 +92,13 @@ public class WeatherForecastApiTest {
         given()
             .config(config().jsonConfig(jsonConfig()))
             .header("Content-Type", APPLICATION_JSON_VALUE)
-            // .header("Authorization", "Bearer test-auth-bearer")
+            .header("Authorization", "Bearer read-user-token")
         .when()
             .get(baseForcastQueryUrl + "?city=Sydney")
             .prettyPeek()
         .then()
             .statusCode(INTERNAL_SERVER_ERROR.value())
-            .body("message", is("Failed to connect external service!!!"))
+            .body("message", is("Failed to connect external service..."))
             .body("error-code", equalTo(500));
         // @formatter:on
 
@@ -106,7 +106,6 @@ public class WeatherForecastApiTest {
     }
 
     @Test
-    @Disabled("till implementing mock oauth2 security")
     public void verifyUserNotAuthorizedToAccessApi() throws Exception {
         stubOpenApiConnectionReset(openWeatherMapApi);
 
@@ -114,7 +113,7 @@ public class WeatherForecastApiTest {
         given()
             .config(config().jsonConfig(jsonConfig()))
             .header("Content-Type", APPLICATION_JSON_VALUE)
-            // .header("Authorization", "Bearer test-auth-bearer")
+            .header("Authorization", "Bearer unauthorized-user-token")
         .when()
             .get(baseForcastQueryUrl + "?city=Sydney")
             .prettyPeek()
@@ -126,7 +125,6 @@ public class WeatherForecastApiTest {
     }
 
     @Test
-    @Disabled("till implementing mock oauth2 security")
     public void verifyCachingSkipsApiCallOnMultipleQueries() throws Exception {
         stubOpenApiWithSuccessResponse(openWeatherMapApi);
 
@@ -134,35 +132,32 @@ public class WeatherForecastApiTest {
         given()
             .config(config().jsonConfig(jsonConfig()))
             .header("Content-Type", APPLICATION_JSON_VALUE)
-            // .header("Authorization", "Bearer test-auth-bearer")
+            .header("Authorization", "Bearer read-user-token")
         .when()
             .get(baseForcastQueryUrl + "?city=Sydney")
         .then()
             .statusCode(OK.value());
         
         // Call same query with same city second time
-
         given()
             .config(config().jsonConfig(jsonConfig()))
             .header("Content-Type", APPLICATION_JSON_VALUE)
-            // .header("Authorization", "Bearer test-auth-bearer")
+            .header("Authorization", "Bearer read-user-token")
         .when()
             .get(baseForcastQueryUrl + "?city=Sydney")
         .then()
             .statusCode(OK.value());
 
         // Call same query with same case sensitive city name third time
-
         given()
             .config(config().jsonConfig(jsonConfig()))
             .header("Content-Type", APPLICATION_JSON_VALUE)
-            // .header("Authorization", "Bearer test-auth-bearer")
+            .header("Authorization", "Bearer read-user-token")
             .log().all()
         .when()
             .get(baseForcastQueryUrl + "?city=sYdnEy")
         .then()
             .statusCode(OK.value());
-
         // @formatter:on
 
         openWeatherMapApi.verify(1, getRequestedFor(urlMatching("/data/2.5/forecast.*")));

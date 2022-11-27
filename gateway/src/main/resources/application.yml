@@ -48,7 +48,7 @@ springdoc:
     authorization-url: http://nodeagent:9000/oauth2/authorize
     token-url: http://nodeagent:9000/oauth2/token
 
-logging:
-  level:
-    root: DEBUG
-    org.apache.tomcat.util.net.NioEndpoint: OFF
+# logging:
+#   level:
+#     root: DEBUG
+#     org.apache.tomcat.util.net.NioEndpoint: OFF

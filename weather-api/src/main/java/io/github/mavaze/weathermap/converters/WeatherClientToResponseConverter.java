@@ -2,13 +2,7 @@ package io.github.mavaze.weathermap.converters;
 
 import static java.util.stream.Collectors.toSet;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +11,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
@@ -33,10 +29,14 @@ import io.github.mavaze.weathermap.dtos.WeatherForecastResponseDTO;
 import io.github.mavaze.weathermap.dtos.WeatherForecastResponseDTO.City;
 import io.github.mavaze.weathermap.dtos.WeatherForecastResponseDTO.WeatherForecast;
 import io.github.mavaze.weathermap.dtos.WeatherForecastResponseDTO.WeatherForecast.WeatherForecastBuilder;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@NoArgsConstructor
+@AllArgsConstructor
 public class WeatherClientToResponseConverter implements
         Converter<OpenWeatherResponseDTO, WeatherForecastResponseDTO> {
 
@@ -54,23 +54,24 @@ public class WeatherClientToResponseConverter implements
     public WeatherForecastResponseDTO convert(final OpenWeatherResponseDTO source) {
         log.trace("Converting external open weather api response: {}", source);
 
-        final ZoneId offset = ZoneOffset.ofTotalSeconds(source.getCity().getTimezone());
-        OffsetDateTime offsetDateTime = OffsetDateTime.now(offset);
+        DateTimeZone offset = DateTimeZone.forOffsetMillis(source.getCity().getTimezone() * 1000);
+        DateTime offsetDateTime = DateTime.now(offset);
 
         final Map<String, WeatherForecast> days = new LinkedHashMap<>();
 
         for (int i = 0; i < forecastPeriod; i++) {
+            offsetDateTime = offsetDateTime.plusDays(1).withTimeAtStartOfDay();
 
-            offsetDateTime = offsetDateTime.plusDays(1).truncatedTo(ChronoUnit.DAYS);
+            final String dateText = offsetDateTime.toString("YYYY-MM-dd");
+            log.trace("Weather forecast is being built for date: {}", dateText);
 
-            final String dateText = offsetDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE);
-
-            final long startPeriod = offsetDateTime.toEpochSecond();
-            final long endPeriod = offsetDateTime.plusDays(1).toEpochSecond();
+            final long startPeriod = offsetDateTime.getMillis() / 1000;
+            final long endPeriod = offsetDateTime.plusDays(1).getMillis() / 1000;
 
             Supplier<Stream<QuarterlyForecast>> forecastStreamSupplier = () -> source.getList().stream()
                     .filter(forecast -> forecast.getDt() >= startPeriod && forecast.getDt() < endPeriod)
-                    .peek(forecast -> log.info("Selecting event for date {}", new Date(forecast.getDt())));
+                    .peek(forecast -> log.trace("Selecting event for date {}",
+                            new DateTime(forecast.getDt() * 1000, offset)));
 
             final Optional<Float> minTemp = findMinTempOfDay(forecastStreamSupplier);
             final Optional<Float> maxTemp = findMaxTempOfDay(forecastStreamSupplier);

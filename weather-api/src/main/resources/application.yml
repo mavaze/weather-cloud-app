@@ -38,7 +38,7 @@ open-weather-map:
   feign:
     url: http://api.openweathermap.org
 
-logging:
-  level:
-    root: DEBUG
-    org.apache.tomcat.util.net.NioEndpoint: OFF
+# logging:
+#   level:
+#     root: DEBUG
+#     org.apache.tomcat.util.net.NioEndpoint: OFF
