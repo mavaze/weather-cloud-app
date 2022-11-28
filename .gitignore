@@ -30,6 +30,7 @@ hs_err_pid*
 
 # Temporary renames, backups
 *_
+backup
 
 # IDE specific
 .vscode

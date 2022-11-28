@@ -27,7 +27,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration corsConfig = new CorsConfiguration();
         corsConfig.applyPermitDefaultValues();
-        // corsConfig.addAllowedOrigin("http://nodeagent:8080");
+        // corsConfig.addAllowedOrigin("http://weather-cloud-*:8080");
         // corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "OPTION", "HEAD"));
         // corsConfig.addAllowedHeader("x-requested-with");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

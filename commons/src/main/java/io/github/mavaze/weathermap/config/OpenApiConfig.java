@@ -16,12 +16,12 @@ import io.swagger.v3.oas.annotations.servers.Server;
 @OpenAPIDefinition(info = @Info(title = "Weather API backed by OpenWeatherMap", 
         description = "Weather prediction application", version = "v1.0.0", license = @License(
                 name = "Apache 2.0", url = "https://github.com/mavaze/weather-cloud-app/blob/develop/LICENSE")), 
-        servers = {@Server(url = "http://nodeagent:9090")},
+        servers = {@Server(url = "http://weather-cloud-api:9090")},
         externalDocs = @ExternalDocumentation(description = "Weather prediction application",
                 url = "https://github.com/mavaze/weather-cloud-app/wiki"))        
 @SecurityScheme(name = "security_auth", type = OAUTH2, flows = @OAuthFlows(authorizationCode = @OAuthFlow(
-                authorizationUrl = "http://nodeagent:9000/oauth2/authorize",
-                tokenUrl = "http://nodeagent:9000/oauth2/token", scopes = {
+                authorizationUrl = "http://weather-cloud-security:9000/oauth2/authorize",
+                tokenUrl = "http://weather-cloud-security:9000/oauth2/token", scopes = {
                         @OAuthScope(name = "read", description = "read scope"),
                         @OAuthScope(name = "write", description = "write scope") })))
 // @formatter:on
@@ -35,7 +35,7 @@ public class OpenApiConfig {
         //         .version("v1.0.0")
         //         .license(new License().name("Apache 2.0")
         //                 .url("https://github.com/mavaze/weather-cloud-app/blob/develop/LICENSE")))
-        //         .servers(Arrays.asList(new Server().url("http://nodeagent:9090")))
+        //         .servers(Arrays.asList(new Server().url("http://weather-cloud-api:9090")))
         //         .externalDocs(new ExternalDocumentation()
         //                 .description("Weather prediction application")
         //                 .url("https://github.com/mavaze/weather-cloud-app/wiki"));

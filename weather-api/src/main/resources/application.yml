@@ -23,7 +23,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://nodeagent:9000
+          issuer-uri: http://weather-cloud-security:9000
+          # jws-algorithms:
+          # - RS256 # default
+          # - RS512
+          # - ES512
+          # jwk-set-uri: http://weather-cloud-security:9000/.well-known/jwks.json
 app:
   api:
     forecast:
