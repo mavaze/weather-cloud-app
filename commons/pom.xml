@@ -6,6 +6,8 @@
   <artifactId>weather-cloud-commons</artifactId>
   <version>1.0.1-SNAPSHOT</version>
 
+  <name>weather-cloud-app</name>
+
   <parent>
     <groupId>io.github.mavaze</groupId>
     <artifactId>weather-cloud-app</artifactId>
