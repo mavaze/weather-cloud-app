@@ -1,6 +1,6 @@
 package io.github.mavaze.weathermap.dtos;
 
-import java.util.*;
+import java.util.Arrays;
 
 import javax.naming.InvalidNameException;
 
@@ -28,6 +28,6 @@ public enum WeatherAdvice {
         return Arrays.stream(WeatherAdvice.values())
                 .filter(o -> o.name().equals(type))
                 .findFirst()
-                .orElseThrow(() -> new InvalidNameException());
+                .orElseThrow(InvalidNameException::new);
     }
 }

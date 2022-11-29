@@ -41,7 +41,7 @@ public class ControllerExceptionHandler {
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> globalException(Exception ex) {
-        return new ResponseEntity<ErrorResponseDTO>(new ErrorResponseDTO(INTERNAL_SERVER_ERROR.value(),
+        return new ResponseEntity<>(new ErrorResponseDTO(INTERNAL_SERVER_ERROR.value(),
                 "Unknown or unhandled exception...", ex.getLocalizedMessage()), INTERNAL_SERVER_ERROR);
     }
 }

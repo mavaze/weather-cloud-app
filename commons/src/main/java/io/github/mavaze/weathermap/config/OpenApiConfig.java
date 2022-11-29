@@ -36,7 +36,7 @@ public class OpenApiConfig {
         List<Server> servers = discoveryClient.getInstances("weather-api")
                 .stream().map(ServiceInstance::getUri).map(URI::toString)
                 .map(url -> new Server().url(url)).collect(toList());
-        final OpenAPI openApiDefinition = new OpenAPI().info(new Info()
+        return new OpenAPI().info(new Info()
                 .title("Weather API backed by OpenWeatherMap [mavaze]")
                 .description("Weather prediction application")
                 .version("v1.0.0")
@@ -46,6 +46,5 @@ public class OpenApiConfig {
                 .externalDocs(new ExternalDocumentation()
                         .description("Weather prediction application")
                         .url("https://github.com/mavaze/weather-cloud-app/wiki"));
-        return openApiDefinition;
     }
 }
