@@ -66,7 +66,7 @@ public class WeatherForecastApiTest {
     }
 
     @Test
-    public void verifyFetchAndTransformResponseFromOpenWeatherMapApi() throws Exception {
+    void verifyFetchAndTransformResponseFromOpenWeatherMapApi() throws Exception {
         stubOpenApiWithSuccessResponse(openWeatherMapApi);
 
         // @formatter:off
@@ -89,7 +89,7 @@ public class WeatherForecastApiTest {
     }
 
     @Test
-    public void verifyOpenWeatherApiFailurePopulatesErrorDto() throws IOException {
+    void verifyOpenWeatherApiFailurePopulatesErrorDto() throws IOException {
         stubOpenApiConnectionReset(openWeatherMapApi);
 
         // @formatter:off
@@ -110,7 +110,7 @@ public class WeatherForecastApiTest {
     }
 
     @Test
-    public void verifyUserNotAuthorizedToAccessApi() throws Exception {
+    void verifyUserNotAuthorizedToAccessApi() throws Exception {
         stubOpenApiConnectionReset(openWeatherMapApi);
 
         // @formatter:off

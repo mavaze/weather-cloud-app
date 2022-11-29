@@ -54,7 +54,7 @@ public class OpenWeatherResponseDTO {
             private float speed;
         }
 
-        public static enum Condition {
+        public enum Condition {
 
             THUNDERSTORM("Thunderstorm"),
             DRIZZLE("Drizzle"),

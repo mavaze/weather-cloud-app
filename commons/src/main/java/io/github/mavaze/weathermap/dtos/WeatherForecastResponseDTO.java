@@ -23,8 +23,8 @@ public class WeatherForecastResponseDTO {
     @Data
     @Builder
     public static class WeatherForecast {
-        private float minTemp;
-        private float maxTemp;
+        private Float minTemp;
+        private Float maxTemp;
         private List<WeatherAdvice> advices;
     }
 }
