@@ -46,7 +46,6 @@ public class WeatherForecastService {
                 })
                 .cast(OpenWeatherResponseDTO.class);
 
-        // final Mono<OpenWeatherResponseDTO> forecast = openWeatherMapApi.queryOpenWeatherMapFor5Day3HourForecast(appId, city);
         return converter.convert(forecast.block(), WeatherForecastResponseDTO.class);
     }
 }

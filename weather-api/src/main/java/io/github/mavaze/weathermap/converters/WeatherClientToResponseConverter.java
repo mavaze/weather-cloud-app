@@ -101,8 +101,8 @@ public class WeatherClientToResponseConverter implements
             });
 
             WeatherForecastBuilder builder = WeatherForecast.builder();
-            minTemp.ifPresent(t -> builder.minTemp(t));
-            maxTemp.ifPresent(t -> builder.maxTemp(t));
+            minTemp.ifPresent(builder::minTemp);
+            maxTemp.ifPresent(builder::maxTemp);
             WeatherForecast build = builder.advices(advices).build();
             days.put(dateText, build);
         }

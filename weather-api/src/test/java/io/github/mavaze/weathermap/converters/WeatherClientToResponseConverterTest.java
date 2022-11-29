@@ -52,7 +52,7 @@ public class WeatherClientToResponseConverterTest {
     }
 
     @Test
-    public void verify() throws Exception {
+    void verifyConverterFiltersThreeDaysForecastData() throws Exception {
         // given
         WeatherClientToResponseConverter converter = new WeatherClientToResponseConverter();
 
