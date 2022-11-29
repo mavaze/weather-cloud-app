@@ -13,6 +13,7 @@
     </parent>
 
     <properties>
+        <sonar.skip>true</sonar.skip>
         <oauth2-authz-server.version>0.4.0</oauth2-authz-server.version>
     </properties>
 
