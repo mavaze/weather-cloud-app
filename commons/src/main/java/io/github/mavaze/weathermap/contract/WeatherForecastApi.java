@@ -18,16 +18,16 @@ import reactor.core.publisher.Mono;
 @SecurityRequirement(name = "security_auth", scopes = { "read", "write" })
 public interface WeatherForecastApi {
 
-        @Operation(summary = "Query for 3 days of weather forecast")
-        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Success", content = {
-                        @Content(mediaType = "application/json", schema = @Schema(implementation = WeatherForecastResponseDTO.class)) }),
-                        @ApiResponse(responseCode = "400", description = "Invalid request parameter", content = @Content),
-                        @ApiResponse(responseCode = "401", description = "User must be logged in first", content = @Content),
-                        @ApiResponse(responseCode = "403", description = "Not authorized to perform this query", content = @Content),
-                        @ApiResponse(responseCode = "404", description = "Result not found", content = @Content),
-                        @ApiResponse(responseCode = "500", description = "External service may not be reachable", content = {
-                                        @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)) }),
-        })
-        @GetMapping("/query")
-        Mono<WeatherForecastResponseDTO> queryWeatherForecast(@RequestParam("city") String city);
+    @Operation(summary = "Query for 3 days of weather forecast")
+    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Success", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = WeatherForecastResponseDTO.class)) }),
+            @ApiResponse(responseCode = "400", description = "Invalid request parameter", content = @Content),
+            @ApiResponse(responseCode = "401", description = "User must be logged in first", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Not authorized to perform this query", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Result not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "External service may not be reachable", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)) }),
+    })
+    @GetMapping("/query")
+    Mono<WeatherForecastResponseDTO> queryWeatherForecast(@RequestParam("city") String city);
 }

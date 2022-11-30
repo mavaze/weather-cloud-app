@@ -1,33 +1,48 @@
 version: "3"
 services:
     gateway:
-        container_name: weather-cloud-gateway
+        # container_name: weather-cloud-gateway
+        container_name: ${GATEWAY_SERVER_HOST}
         build:
-            context: gateway
+            context: ../gateway
             dockerfile: Dockerfile
         image: weather-cloud-gateway:latest
+        environment:
+            - PROFILE=${PROFILE}
+        env_file:
+            - .overrides
         ports:
             - 8080:8080
         networks:
             - weather-cloud-network
     security:
-        container_name: weather-cloud-security
+        # container_name: weather-cloud-security
+        container_name: ${AUTHORIZATION_SERVER_HOST}
         build:
-            context: security
+            context: ../security
             dockerfile: Dockerfile
         image: weather-cloud-security:latest
         ports:
             - 9000:9000
+        environment:
+            - PROFILE=${PROFILE}
+        env_file:
+            - .overrides
         networks:
             - weather-cloud-network
     weather-api:
-        container_name: weather-cloud-api
+        # container_name: weather-cloud-api
+        container_name: ${API_SERVER_HOST}
         build:
-            context: weather-api
+            context: ../weather-api
             dockerfile: Dockerfile
         image: weather-cloud-api:latest
         ports:
             - 9090:9090
+        environment:
+            - PROFILE=${PROFILE}
+        env_file:
+            - .overrides
         networks:
             - weather-cloud-network
 networks:

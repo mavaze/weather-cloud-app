@@ -33,13 +33,6 @@
             <version>2.12.1</version>
         </dependency>
 
-        
-        <!-- Springdoc OpenAPI dependency -->
-        <dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-webmvc-core</artifactId>
-		</dependency>
-
         <!-- Authorization Resource Server and Security dependencies -->
         <dependency>
             <groupId>org.springframework.security</groupId>

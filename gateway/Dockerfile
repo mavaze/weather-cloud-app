@@ -7,4 +7,4 @@ FROM openjdk:8-jdk-alpine
 # COPY --from=build /home/app/target/weather-cloud-gateway-*.jar weather-cloud-gateway.jar
 COPY target/weather-cloud-gateway-*.jar weather-cloud-gateway.jar
 
-ENTRYPOINT ["java","-jar","/weather-cloud-gateway.jar"]
+ENTRYPOINT ["java","-jar","-Dspring.profiles.active=${PROFILE}","/weather-cloud-gateway.jar"]

@@ -33,5 +33,6 @@ hs_err_pid*
 backup
 
 # IDE specific
+.idea
 .vscode
 *.code-workspace
