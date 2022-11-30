@@ -8,6 +8,7 @@ import static org.springframework.security.oauth2.core.ClientAuthenticationMetho
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -44,6 +45,9 @@ public class AuthorizationServerConfig {
 	@Autowired
 	private PasswordEncoder passEncoder;
 
+	@Value("${gateway.server.url}")
+	private String gatewayServerUrl;
+
 	@Bean
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -71,9 +75,7 @@ public class AuthorizationServerConfig {
 				.authorizationGrantType(AUTHORIZATION_CODE)
 				.authorizationGrantType(REFRESH_TOKEN)
 				.authorizationGrantType(CLIENT_CREDENTIALS)
-				.redirectUri("http://weather-cloud-gateway:8080/webjars/swagger-ui/oauth2-redirect.html")
-				// .redirectUri("http://weather-cloud-gateway:8080/login/oauth2/code/gateway-oidc")
-				// .redirectUri("http://weather-cloud-gateway:8080/authorized")
+				.redirectUri(gatewayServerUrl + "/webjars/swagger-ui/oauth2-redirect.html")
 				.scope("read")
 				.scope("write")
 				.clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
