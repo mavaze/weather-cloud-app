@@ -3,21 +3,28 @@ server.port: 8080
 spring:
   application.name: gateway
 
+authorization.server.url: http://weather-cloud-security:9000
+gateway.server.url: http://weather-cloud-gateway:8080
+weatherapi.server:
+  host: weather-cloud-api
+  port: 9090
+
 spring.cloud.discovery:
   enabled: true
   client.simple.instances:
     weather-api:
     - instance-id: weather-api
       service-id: weather-api
-      host: weather-cloud-api
-      port: 9090
+      host: ${weatherapi.server.host}
+      port: ${weatherapi.server.port}
+      uri: http://${weatherapi.server.host}:${weatherapi.server.port}
 
 spring.cloud.gateway:
   loadbalancer:
     use404: false
   routes:
   - id: openapi
-    uri: http://weather-cloud-gateway:${server.port}
+    uri: ${gateway.server.url}
     predicates:
     - Path=/v3/api-docs/**
     filters:
@@ -43,12 +50,9 @@ springdoc:
       client-secret: secret # ignored if pkce is enabled
       app-name: weather-cloud-gateway
       # use-pkce-with-authorization-code-grant: true
-    oauth2-redirect-url: http://weather-cloud-gateway:8080/webjars/swagger-ui/oauth2-redirect.html
-  oauth-flow:
-    authorization-url: http://weather-cloud-security:9000/oauth2/authorize
-    token-url: http://weather-cloud-security:9000/oauth2/token
+    oauth2-redirect-url: ${gateway.server.url}/webjars/swagger-ui/oauth2-redirect.html
 
 # logging:
 #   level:
-#     root: DEBUG
+#     root: TRACE
 #     org.apache.tomcat.util.net.NioEndpoint: OFF

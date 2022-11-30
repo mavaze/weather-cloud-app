@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# HEADER='\033[95m'
-# OKBLUE='\033[94m'
-# OKCYAN='\033[96m'
-# WARNING='\033[93m'
-# UNDERLINE='\033[4m'
-
 HIGHLIGHT='\033[92m'
 FAIL='\033[91m'
 NOCOLOR='\033[0m\n'
@@ -13,7 +7,7 @@ BOLD='\033[1m'
 
 printf "${BOLD}${HIGHLIGHT}*** [STEP 1] Building application executable binaries${NOCOLOR}"
 # mvn clean install >> /dev/null 2>&1
-mvn clean install -DskipTests >> /dev/null 2>&1
+mvn -f ../pom.xml clean install -DskipTests >> /dev/null 2>&1
 rc=$?
 if [ $rc -ne 0 ] ; then
   printf "${BOLD}${FAIL}Could not perform mvn clean install, exit code [$rc]${NOCOLOR}"; exit $rc
@@ -45,7 +39,7 @@ printf "${BOLD}${HIGHLIGHT}*** [STEP 4] Running containers in the background${NO
 #         docker-compose down
 #     fi
 # fi
-docker-compose up -d 
+docker-compose up
 
 echo
 printf "${BOLD}${HIGHLIGHT}Run \`docker-compose logs -f\` for logs or \`docker-compose down\` to stop all associated containers${NOCOLOR}"

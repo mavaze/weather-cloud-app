@@ -6,12 +6,16 @@ server:
     enabled: true
     mime-types: application/json
     min-response-size: 1024
+
+authorization.server.url: http://weather-cloud-security:9000
+
 encrypt:
   keyStore:
     location: classpath:/server.jks
     password: changeme
     alias: mytestkey
     secret: changeme
+
 spring:
   application.name: weather-api
   cache.type: caffeine
@@ -23,12 +27,16 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://weather-cloud-security:9000
+          issuer-uri: ${authorization.server.url}
           # jws-algorithms:
           # - RS256 # default
           # - RS512
           # - ES512
-          # jwk-set-uri: http://weather-cloud-security:9000/.well-known/jwks.json
+          # jwk-set-uri: ${authorization.server.url}/.well-known/jwks.json
+springdoc:
+  oauth-flow:
+    authorization-url: ${authorization.server.url}/oauth2/authorize
+    token-url: ${authorization.server.url}/oauth2/token
 app:
   api:
     forecast:
