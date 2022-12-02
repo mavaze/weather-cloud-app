@@ -3,6 +3,8 @@ package io.github.mavaze.weathermap;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static io.github.mavaze.weathermap.support.StubUtils.stubOpenApiConnectionReset;
+import static io.github.mavaze.weathermap.support.StubUtils.stubOpenApiInvalidResponseContent;
+import static io.github.mavaze.weathermap.support.StubUtils.stubOpenApiResultNotFound;
 import static io.github.mavaze.weathermap.support.StubUtils.stubOpenApiWithSuccessResponse;
 import static io.restassured.RestAssured.config;
 import static io.restassured.RestAssured.given;
@@ -11,10 +13,14 @@ import static io.restassured.config.JsonConfig.jsonConfig;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 import java.io.IOException;
 
@@ -26,10 +32,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
@@ -38,8 +42,8 @@ import io.github.mavaze.weathermap.support.ApplicationContextTestConfiguration;
 import io.github.mavaze.weathermap.support.WireMockExtensions;
 
 @ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { ApplicationContextTestConfiguration.class })
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
+@SpringBootTest(webEnvironment = RANDOM_PORT, classes = { ApplicationContextTestConfiguration.class })
 public class WeatherForecastApiTest {
 
     @LocalServerPort
@@ -125,7 +129,50 @@ public class WeatherForecastApiTest {
     }
 
     @Test
-    public void verifyCachingSkipsApiCallOnMultipleQueries() throws Exception {
+    void verifyConversionFailureForInvalidOpenApiResponse() throws Exception {
+        stubOpenApiInvalidResponseContent(openWeatherMapApi);
+
+        // @formatter:off
+        given()
+            .config(config().jsonConfig(jsonConfig()))
+            .header("Content-Type", APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer read-user-token")
+        .when()
+            .get(baseForcastQueryUrl + "?city=Sydney")
+            .prettyPeek()
+        .then()
+            .statusCode(BAD_REQUEST.value())
+            .body("message", is("Failed to convert response object..."))
+            .body("error-code", equalTo(400));
+        // @formatter:on
+
+        openWeatherMapApi.verify(1, getRequestedFor(urlMatching("/data/2.5/forecast.*")));
+    }
+
+    @Test
+    void verifyResultNotFoundForGivenInputCity() throws Exception {
+        stubOpenApiResultNotFound(openWeatherMapApi);
+
+        // @formatter:off
+        given()
+            .config(config().jsonConfig(jsonConfig()))
+            .header("Content-Type", APPLICATION_JSON_VALUE)
+            .header("Authorization", "Bearer read-user-token")
+        .when()
+            .get(baseForcastQueryUrl + "?city=Sydney")
+            .prettyPeek()
+        .then()
+            .statusCode(NOT_FOUND.value())
+            .body("message", is("Result not found..."))
+            .body("error-code", equalTo(404));
+        // @formatter:on
+
+        openWeatherMapApi.verify(1, getRequestedFor(urlMatching("/data/2.5/forecast.*")));
+
+    }
+
+    @Test
+    void verifyCachingSkipsApiCallOnMultipleQueries() throws Exception {
         stubOpenApiWithSuccessResponse(openWeatherMapApi);
 
         // @formatter:off
@@ -153,7 +200,6 @@ public class WeatherForecastApiTest {
             .config(config().jsonConfig(jsonConfig()))
             .header("Content-Type", APPLICATION_JSON_VALUE)
             .header("Authorization", "Bearer read-user-token")
-            .log().all()
         .when()
             .get(baseForcastQueryUrl + "?city=sYdnEy")
         .then()

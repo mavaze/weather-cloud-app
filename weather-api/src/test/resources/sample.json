@@ -182,8 +182,8 @@
             "weather": [
                 {
                     "id": 801,
-                    "main": "Clouds",
-                    "description": "few clouds",
+                    "main": "Thunderstorm",
+                    "description": "thunderstorm",
                     "icon": "02n"
                 }
             ],

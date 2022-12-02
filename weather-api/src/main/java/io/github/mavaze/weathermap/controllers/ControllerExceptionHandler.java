@@ -4,7 +4,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.codec.DecodingException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -18,8 +18,8 @@ import reactivefeign.client.ReactiveFeignException;
 public class ControllerExceptionHandler {
 
     @ResponseStatus(BAD_REQUEST)
-    @ExceptionHandler(ConversionFailedException.class)
-    public ResponseEntity<ErrorResponseDTO> handleConnversion(ConversionFailedException ex) {
+    @ExceptionHandler(DecodingException.class)
+    public ResponseEntity<ErrorResponseDTO> handleConnversion(DecodingException ex) {
         return new ResponseEntity<>(new ErrorResponseDTO(BAD_REQUEST.value(), "Failed to convert response object...",
                 ex.getLocalizedMessage()), BAD_REQUEST);
     }
