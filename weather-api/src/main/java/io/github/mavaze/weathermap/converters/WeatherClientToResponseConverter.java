@@ -49,24 +49,28 @@ public class WeatherClientToResponseConverter implements
     @Value("${app.api.forecast.thresholds.wind-speed}")
     private int windSpeedWarningThreshold = 10;
 
+    // Forecast will start from today, if current local time is before cutoff time from 12:00AM in seconds 
+    @Value("${app.api.forecast.next-day-cutoff}")
+    private int cutoffSecondsToNextDay = 1800; // 30 mins
+
     @Override
     @Nullable
     public WeatherForecastResponseDTO convert(final OpenWeatherResponseDTO source) {
         log.trace("Converting external open weather api response: {}", source);
 
         DateTimeZone offset = DateTimeZone.forOffsetMillis(source.getCity().getTimezone() * 1000);
-        DateTime offsetDateTime = DateTime.now(offset);
+        DateTime localStartOfDay = evaluateStartDateConsideringCutoff(DateTime.now(offset)).withTimeAtStartOfDay();
 
         final Map<String, WeatherForecast> days = new LinkedHashMap<>();
 
         for (int i = 0; i < forecastPeriod; i++) {
-            offsetDateTime = offsetDateTime.plusDays(1).withTimeAtStartOfDay();
 
-            final String dateText = offsetDateTime.toString("YYYY-MM-dd");
+            final String dateText = localStartOfDay.toString("YYYY-MM-dd");
             log.trace("Weather forecast is being built for date: {}", dateText);
 
-            final long startPeriod = offsetDateTime.getMillis() / 1000;
-            final long endPeriod = offsetDateTime.plusDays(1).getMillis() / 1000;
+            final long startPeriod = localStartOfDay.getMillis() / 1000;
+            localStartOfDay = localStartOfDay.plusDays(1);
+            final long endPeriod = localStartOfDay.getMillis() / 1000;
 
             Supplier<Stream<QuarterlyForecast>> forecastStreamSupplier = () -> source.getList().stream()
                     .filter(forecast -> forecast.getDt() >= startPeriod && forecast.getDt() < endPeriod)
@@ -110,8 +114,20 @@ public class WeatherClientToResponseConverter implements
                         .build())
                 .days(days).build();
 
+        log.debug("Days evaluated for forecast with cutoff of {} seconds: {}", cutoffSecondsToNextDay, days.keySet());
         log.debug("Response successfully converted to {}", response);
         return response;
+    }
+
+    private DateTime evaluateStartDateConsideringCutoff(final DateTime localNow) {
+        if (localNow.withTimeAtStartOfDay().plusSeconds(cutoffSecondsToNextDay).isBefore(localNow)) {
+            log.debug("Current local time {} has passed cutoff time in {} seconds. " +
+                    "Evaluating forecast from next day.", localNow, cutoffSecondsToNextDay);
+            return localNow.plusDays(1);
+        }
+        log.debug("Current local time {} is within cutoff time in {} seconds. " +
+                "Evaluating forecast from present day.", localNow, cutoffSecondsToNextDay);
+        return localNow;
     }
 
     private Set<Condition> findWeatherConditionsOfDay(
