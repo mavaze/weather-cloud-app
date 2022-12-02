@@ -10,6 +10,7 @@ import static java.nio.charset.Charset.defaultCharset;
 import static lombok.AccessLevel.PRIVATE;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.util.StreamUtils.copyToString;
@@ -24,11 +25,14 @@ import java.time.ZoneOffset;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 import io.github.mavaze.weathermap.WeatherForecastApiTest;
+import io.github.mavaze.weathermap.dtos.ErrorResponseDTO;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class StubUtils {
@@ -59,7 +63,6 @@ public final class StubUtils {
     public static void stubOpenApiWithSuccessResponse(WireMockExtension openWeatherMapApi) throws IOException {
         openWeatherMapApi.stubFor(get(urlMatching("/data/2.5/forecast.*"))
                 .willReturn(aResponse().withStatus(OK.value())
-                        // .withFixedDelay(2000)
                         .withHeader("Content-Type", APPLICATION_JSON_VALUE)
                         .withBody(copyToString(WeatherForecastApiTest.class.getClassLoader()
                                 .getResourceAsStream("sample.json"), defaultCharset()))));
@@ -69,5 +72,25 @@ public final class StubUtils {
         openWeatherMapApi.stubFor(get(urlMatching("/data/2.5/forecast.*"))
                 .willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE.value())
                         .withFixedDelay(2000).withFault(CONNECTION_RESET_BY_PEER)));
+    }
+
+    public static void stubOpenApiInvalidResponseContent(WireMockExtension openWeatherMapApi) {
+        openWeatherMapApi.stubFor(get(urlMatching("/data/2.5/forecast.*"))
+                .willReturn(aResponse().withStatus(OK.value())
+                        .withHeader("Content-Type", APPLICATION_JSON_VALUE)
+                        .withBody("{\"city\": {\"timezone\": \"GMT+530\"}}")));
+    }
+
+    public static void stubOpenApiResultNotFound(WireMockExtension openWeatherMapApi) {
+        openWeatherMapApi.stubFor(get(urlMatching("/data/2.5/forecast.*"))
+                .willReturn(aResponse().withStatus(NOT_FOUND.value())
+                        .withBody(toJson(new ErrorResponseDTO(
+                                404, "Result not found...", "{\"cod\": \"404\", \"message\": \"city not found\"}")))));
+
+    }
+
+    @SneakyThrows
+    public static String toJson(@NonNull Object object) {
+        return new ObjectMapper().writeValueAsString(object);
     }
 }
