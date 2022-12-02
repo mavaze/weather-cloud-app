@@ -12,17 +12,25 @@
 - Secrets: Secrets like open-waether-map api appid is kept encrypted in properties file
 - Client side service discovery
 - Testing: Wiremock + Rest Assured
-- [WIP] profile based configuration (prod, dev)
+- Profile based configuration (prod, dev)
 - Performance: use of reactive components and caching of responses with city name as key  
 
 ## Local Execution
 
-* Please add `127.0.0.1 weather-cloud-api weather-cloud-gateway weather-cloud-security` in /etc/hosts
+* Please add in /etc/hosts below hosts for local resolution ...
+  ```
+    127.0.1.1       weather-cloud-api weather-cloud-gateway weather-cloud-security
+    127.0.2.1       weather-api-stage weather-gateway-stage weather-security-stage
+    127.0.3.1       weather-api-prod weather-gateway-prod weather-security-prod
+  ```
+
 
 ```bash
-$ cd weather-cloud-app
-
-$ sh startup.sh
+$ cd weather-cloud-app/build
+$ vi .env
+# -- comment out properties for default deployment --
+# -- with existing properties applications will be accessible by the name of 'stage' --
+$ sh deploy.sh
 # -- OR --
 $ mvn clean install
 $ docker-compose build
@@ -77,7 +85,27 @@ curl -X 'GET' \
 ## Continuous Integration
 
 * Currently CI is achieved with github actions. Following code commit/merge in `develop` branch an action triggers maven build along with test execution.
-* [WIP] Same to be achieved with Jenkinsfile 
+* Additionally CI is achieved with Jenkinsfile pipeline in order to integrate with Jenkins
+* Jacoco code coverage and integration with sonarcloud for sonar analysis.
+  * Plugins needed: Maven3, JDK11, Sonar Server (and Scanner), Docker (WIP)
+  * For local sonar report, update ~/.m2/settings.xml with following ...
+    ```
+    <profile>
+        <id>sonar</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <!-- Optional URL to server. Default value is http://localhost:9000 -->
+            <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+            <sonar.login>sonarcloud-api-key</sonar.login>
+            <sonar.organization>mavaze-github</sonar.organization>
+            <sonar.password/>
+        </properties>
+    </profile>
+    ```
+    and execute command `mvn clean verify sonar:sonar -Pcoverage`
+  * And for Jenkins update 'SonarQube installations' in Manage COnfiguration section, for server url, token, additional mandatory arguments like sonar.organization and sonar.projectKey etc.
 
 ## Continuous Delivery
 * Artificats with SNAPSHOT versions will not be generated.
@@ -116,9 +144,28 @@ $ openssl rsa -in server.pem -pubout > server.pub
 $ spring encrypt <property's secret value e.g. 'mysecretpassword'> -key @server.pub -p open-weather-map.api.appid
 open-weather-map.api.appid={cipher}AQA9vS7k6STBbSxremLisfNYzcrw7VnrvPhnGA0MDPO6GfM/H/PhJi2odR+iO8XtblzMp9INdZt8Sdjvfmzxb7KWeSDdwFnWVt+/VqCviXfHqWRduzYeXPQ3cdB/0/u74wunXVohV8+uYCVQ2tRtpC+OwDZn/5+28JzYJz9egg61N6FwZ9y5URLhHJzpaBIAfn9eVekDfGlM7bGBlOftLP+F4+R5BC9zOzuc2Tpkzaa2Hi+u/7PAkLDF/i7nET6qrIuo5fdT9MahRMMOsGs7TEQP5jAAT6/EtewZ3djYqA3PyBSOjjWZY6DvUcd8ErPsQvkHkrD2HF1vZQAdd9zYQnZxNG9N/nhSn19hBlzyg+Pl8kA275dSNNflSCie11esS4kfifmQW7c3EF2+OUBDvvA4
 ```
+It is strongly recommended to install config-server to avoid all this hassle and more control on externalized configuration.
+
+## Hard coded values
+* Gateway credentials:
+  * User: gateway
+  * Password: secret
+* In memory demo user:
+  * User: user
+  * Password: password
+  * Permission: read
+* Simple discovery client with host details fixed in application.yml (this will go away with integration with eureka)
+
+## Future Scope
+* Integrate with Eureka/Consul server for service discovery
+* Integrate with config server for externalization of configuration
+* Implement circuit breaker using resilience4j around call to OpenWeatherMap API.
+* Enhance Jenkins pipeline to build docker image and push it to dockerhub or mavaze.jfrog.io
+* Tuning parameters like jvm, timeouts, gzip, cors, cache etc.
+* More parameters fo deployment script
 
 ## References
-
+* [weather-cloud-app](https://github.com/mavaze/weather-cloud-app) - This very application
 * [Bahubali](https://github.com/mavaze/bahubali) - Showcasing app with no libraries other than standard JDK
 * [HTTP2 Mock Server](https://github.com/mavaze/http2-mockserver) - A requirement in day to day work triggered this implmentation
 * [Revolute Banking](https://github.com/mavaze/revolut-banking) - Uses jersey instead of spring framework
