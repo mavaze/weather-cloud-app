@@ -10,16 +10,16 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.4</version>
+    <version>3.0.0</version>
     <!-- <relativePath /> lookup parent from repository -->
   </parent>
 
   <properties>
-    <java.version>1.8</java.version>
+    <java.version>17</java.version>
     <project.scm.id>github</project.scm.id>
     <springdoc.version>1.6.12</springdoc.version>
-    <spring-cloud.version>2021.0.4</spring-cloud.version>
-    <oauth2-resource-server.version>5.7.3</oauth2-resource-server.version>
+    <spring-cloud.version>2021.0.5</spring-cloud.version>
+    <oauth2-resource-server.version>6.0.0</oauth2-resource-server.version>
     <repository.application>mavaze/weather-cloud-app</repository.application>
   </properties>
 

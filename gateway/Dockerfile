@@ -3,7 +3,7 @@
 # COPY pom.xml /home/app
 # RUN mvn -f /home/app/pom.xml clean package
 
-FROM openjdk:8-jdk-alpine
+FROM openjdk:18-jdk-alpine
 # COPY --from=build /home/app/target/weather-cloud-gateway-*.jar weather-cloud-gateway.jar
 COPY target/weather-cloud-gateway-*.jar weather-cloud-gateway.jar
 
