@@ -1,6 +1,6 @@
 package io.github.mavaze.weathermap;
 
-import org.springdoc.core.SwaggerUiConfigParameters;
+import org.springdoc.core.properties.SwaggerUiConfigParameters;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

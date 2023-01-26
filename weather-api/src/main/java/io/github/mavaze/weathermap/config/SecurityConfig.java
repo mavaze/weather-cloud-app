@@ -15,9 +15,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors().and()
-                .authorizeRequests()
-                .mvcMatchers("/v3/api-docs/**").permitAll()
-                .mvcMatchers("/api/forecast/**").access("hasAuthority('SCOPE_read')")
+                .authorizeHttpRequests()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/forecast/**").hasAnyAuthority("SCOPE_read")
                 .anyRequest().authenticated().and()
                 .oauth2ResourceServer().jwt();
         return http.build();
